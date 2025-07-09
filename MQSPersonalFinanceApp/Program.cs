@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MQSPersonalFinanceApp.Components;
 using MQSPersonalFinanceApp.Components.Account;
 using MQSPersonalFinanceApp.Data;
+using MQSPersonalFinanceApp.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,16 +23,13 @@ builder.Services.AddAuthentication(options =>
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
     .AddIdentityCookies();
+
 /*Banco para gerenciamento de usuários da aplicação*/
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-/*Banco da aplicação*/
-var connectionStringPrincipal = builder.Configuration.GetConnectionString("DbPrincipal") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -40,6 +38,12 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+/*Banco da aplicação*/
+var connectionStringPrincipal = builder.Configuration.GetConnectionString("DbPrincipal") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<ApplicationDbContextPrincipal>(options =>
+    options.UseSqlServer(connectionString));
+
 
 var app = builder.Build();
 
